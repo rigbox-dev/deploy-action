@@ -1,0 +1,52 @@
+name: Deploy to Rigbox
+description: Deploy a GitHub repository to its Rigbox workspace using GitHub OIDC.
+inputs:
+  cli-version:
+    description: Rigbox CLI release (latest or a stable version at least v0.12.64).
+    default: latest
+  api-url:
+    description: Rigbox API base URL.
+    default: https://api.rigbox.dev
+  audience:
+    description: Audience requested from GitHub OIDC; must match the Rigbox server.
+    default: https://api.rigbox.dev
+  working-directory:
+    description: Directory containing rig.yaml.
+    default: .
+outputs:
+  workspace-id:
+    description: Bound workspace ID.
+    value: ${{ steps.deploy.outputs.workspace-id }}
+  url:
+    description: First reported app URL, if available.
+    value: ${{ steps.deploy.outputs.url }}
+  apps:
+    description: JSON array of app names, URLs, and outcomes.
+    value: ${{ steps.deploy.outputs.apps }}
+  success:
+    description: Whether the deploy completed successfully.
+    value: ${{ steps.deploy.outputs.success }}
+  failures:
+    description: Number of failed apps.
+    value: ${{ steps.deploy.outputs.failures }}
+  duration-ms:
+    description: Deployment duration in milliseconds.
+    value: ${{ steps.deploy.outputs.duration-ms }}
+  result:
+    description: Complete deploy_finished JSON event, including partial failures.
+    value: ${{ steps.deploy.outputs.result }}
+  exit-code:
+    description: CLI exit code.
+    value: ${{ steps.deploy.outputs.exit-code }}
+runs:
+  using: composite
+  steps:
+    - id: deploy
+      shell: bash
+      env:
+        ACTION_CLI_VERSION: ${{ inputs.cli-version }}
+        ACTION_API_URL: ${{ inputs.api-url }}
+        ACTION_AUDIENCE: ${{ inputs.audience }}
+        ACTION_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        ACTION_GITHUB_TOKEN: ${{ github.token }}
+      run: python3 "$GITHUB_ACTION_PATH/scripts/deploy.py"
