@@ -193,9 +193,18 @@ def deploy_environment(binding, environ):
     return env
 
 
+def reimage_enabled(environ):
+    value = environ.get("ACTION_REIMAGE", "false")
+    if value not in ("true", "false"):
+        raise ActionError("The reimage input must be true or false; true explicitly permits workspace disk replacement.")
+    return value == "true"
+
+
 def run_deploy(binary, binding, environ):
     env = deploy_environment(binding, environ)
     command = [str(binary), "deploy", "--workspace", binding["workspace_id"], "--output", "json"]
+    if reimage_enabled(environ):
+        command.append("--reimage")
     terminal = None
     marker = uuid.uuid4().hex
     print(f"::stop-commands::{marker}", flush=True)
@@ -252,6 +261,7 @@ def write_outputs(values, output_path):
 
 def main(environ=None):
     environ = os.environ if environ is None else environ
+    reimage_enabled(environ)
     token = oidc_token(environ)
     binding = exchange(environ.get("ACTION_API_URL", "https://api.rigbox.dev"), token, environ)
     with tempfile.TemporaryDirectory(prefix="rigbox-deploy-", dir=environ.get("RUNNER_TEMP")) as temporary:

@@ -91,6 +91,13 @@ class ActionTests(unittest.TestCase):
         with self.assertRaisesRegex(deploy.ActionError, "contents: read"):
             deploy.deploy_environment(binding(True), {})
 
+    def test_invalid_reimage_input_fails_before_network(self):
+        for value in ["yes", "1", "TRUE", ""]:
+            with patch.object(deploy, "oidc_token") as oidc:
+                with self.assertRaisesRegex(deploy.ActionError, "reimage input must be true or false"):
+                    deploy.main({"ACTION_REIMAGE": value})
+                oidc.assert_not_called()
+
     def test_old_prerelease_and_invalid_versions_are_rejected(self):
         for version in ["v0.12.63", "0.12.63", "v0.12.64-rc.1", "../main", "latest"]:
             with self.assertRaises(deploy.ActionError):
@@ -191,6 +198,13 @@ class ActionTests(unittest.TestCase):
             self.assertEqual(parsed, event)
             self.assertEqual(json.loads(capture.read_text()), ["deploy", "--workspace", "ws-test", "--output", "json"])
             self.assertTrue(log.getvalue().startswith("::stop-commands::"))
+            for consent in ["false", "true"]:
+                with contextlib.redirect_stdout(io.StringIO()):
+                    deploy.run_deploy(binary, binding(), {**env, "ACTION_REIMAGE": consent})
+                expected = ["deploy", "--workspace", "ws-test", "--output", "json"]
+                if consent == "true":
+                    expected.append("--reimage")
+                self.assertEqual(json.loads(capture.read_text()), expected)
 
 
 if __name__ == "__main__":

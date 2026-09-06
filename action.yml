@@ -13,6 +13,9 @@ inputs:
   working-directory:
     description: Directory containing rig.yaml.
     default: .
+  reimage:
+    description: Explicitly allow replacing the workspace disk for an image deployment.
+    default: "false"
 outputs:
   workspace-id:
     description: Bound workspace ID.
@@ -48,5 +51,6 @@ runs:
         ACTION_API_URL: ${{ inputs.api-url }}
         ACTION_AUDIENCE: ${{ inputs.audience }}
         ACTION_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        ACTION_REIMAGE: ${{ inputs.reimage }}
         ACTION_GITHUB_TOKEN: ${{ github.token }}
       run: python3 "$GITHUB_ACTION_PATH/scripts/deploy.py"

@@ -27,6 +27,8 @@ reproducible: true
 
 Private repositories require `reproducible: true`. The Action passes the job's GitHub token only when the OIDC exchange identifies a private repository, and the builder fetches the exact workflow commit. Public repositories clone anonymously. Application environment variables can still come from workflow `env:` through the existing manifest configuration.
 
+The first reproducible deployment to an existing workspace may require replacing its disk to pin the workspace to the built image. After backing up data you need to keep, explicitly set `with: { reimage: "true" }` on the Action for that setup deployment. Disk replacement discards existing workspace disk contents. Remove the input after the workspace is image-pinned; the default is `false`, and the Action never enables it automatically.
+
 Create `.github/workflows/deploy.yml`:
 
 ```yaml
@@ -62,6 +64,7 @@ For reproducible workflow configuration, pin the Action to a reviewed commit and
 | `api-url` | `https://api.rigbox.dev` | Rigbox API base URL, using HTTPS. |
 | `audience` | `https://api.rigbox.dev` | Explicit GitHub OIDC audience; must match the server configuration. |
 | `working-directory` | `.` | Directory containing `rig.yaml`. |
+| `reimage` | `false` | `true` explicitly permits workspace disk replacement; use only when prepared to discard its existing disk contents. |
 
 Linux x64 and macOS Intel/Apple Silicon use the corresponding raw assets from the public [CLI artifact releases](https://github.com/rigbox-dev/cli-artifacts/releases). Linux ARM fails with an actionable error until a `rigbox-linux-arm64` asset exists. Windows is unsupported. The runner needs Bash and Python 3.9 or newer; GitHub-hosted Linux and macOS runners provide them.
 
