@@ -2,7 +2,7 @@
 
 A composite GitHub Action that exchanges GitHub OIDC for a short-lived Rigbox deployment credential and deploys the repository to its bound workspace. No Rigbox API key or SSH key needs to be stored in GitHub secrets.
 
-**Development preview:** no release tag has been published yet. The examples below show the intended `v1` interface. Release requires the OIDC endpoint and Rigbox CLI v0.12.64 or newer to be live and verified. The Action rejects earlier CLI versions.
+Requires Rigbox CLI **v0.12.64 or newer** and GitHub OIDC deployments enabled for your Rigbox account. The Action rejects earlier CLI versions.
 
 ## Setup
 
@@ -13,7 +13,7 @@ rig login
 rig ci link --repo YOUR_ORG/YOUR_REPO --workspace production
 ```
 
-The initial binding has a 24-hour claim window. Run the workflow during that window, or run `rig ci link` again to renew the pending binding. The workspace comes from this server-side binding; a fresh checkout does not create a new workspace.
+The initial binding has a 24-hour claim window. The first claim relies on control of the configured repository name during that window, so verify the name before linking. Run the workflow during that window, or run `rig ci link` again to renew the pending binding. The workspace comes from this server-side binding; a fresh checkout does not create a new workspace.
 
 Every app deployed from CI must use `source.kind: git`. Add the following fields to your existing app definition in `rig.yaml`, using the repository's HTTPS URL:
 
